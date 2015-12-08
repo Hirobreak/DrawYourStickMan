@@ -19,6 +19,7 @@
 			var point;
 			var lastPoint;
 			var pointsList = [];
+			var drawLines = [];
 			var letsDraw = false;
 			var mouseDown = false;
 			var scene, camera, render;
@@ -39,7 +40,97 @@
 			function onMouseUp( e ) {
 				mouseDown = false;
 				letsDraw = false;
-				pointsList = []
+				if (drawLines.length > 1){
+					
+					var endPoint = pointsList[pointsList.length-1]; //Punto final del trazo
+					var puntosMuestreo = 128;
+					var newPointsList = [];
+					var distanciaTotal = 0; //Distancia total del trazo
+					var distanciaPromedio = 0; //distancia promedio para equi-espaciar los puntos
+					var distancia = 0; //distancia entre 2 puntos
+					var distanciaAvance = 0; //distancia acumulada en el resampling
+					
+					//INICIO DEL REMUESTREO//
+					for (i = 1; i < pointsList.length; i++) { 
+						distanciaTotal += pointsList[i-1].distanceTo(pointsList[i]);
+					}
+					console.log('array points length ' + pointsList.length);
+					distanciaPromedio = distanciaTotal/(puntosMuestreo - 1);
+					newPointsList.push( pointsList[0] );
+					for (i = 1; i < pointsList.length; i++) { 
+						distancia = pointsList[i-1].distanceTo(pointsList[i]);
+						if((distanciaAvance + distancia) >= distanciaPromedio){
+							var nuevoPunto = new THREE.Vector3();
+							nuevoPunto.x = pointsList[i-1].x + ((distanciaPromedio - distanciaAvance)/distancia)*(pointsList[i].x-pointsList[i-1].x);
+							nuevoPunto.y = pointsList[i-1].y + ((distanciaPromedio - distanciaAvance)/distancia)*(pointsList[i].y-pointsList[i-1].y);
+							nuevoPunto.z = 0;
+							newPointsList.push( nuevoPunto );
+							pointsList.splice(i, 0, nuevoPunto);
+							distanciaAvance = 0;
+						}else{
+							distanciaAvance += distancia;
+						}
+					}
+					newPointsList[puntosMuestreo - 1]= endPoint;
+					console.log('array points length resampled ' + newPointsList.length);
+					
+					//Detectando Cabeza//
+					var vector1 = new THREE.Vector2(newPointsList[Math.round(puntosMuestreo/4)].x - newPointsList[0].x, newPointsList[Math.round(puntosMuestreo/4)].y - newPointsList[0].y);
+					var vector2 = new THREE.Vector2(newPointsList[Math.round(2*puntosMuestreo/4)].x - newPointsList[Math.round(puntosMuestreo/4)].x, newPointsList[Math.round(2*puntosMuestreo/4)].y - newPointsList[Math.round(puntosMuestreo/4)].y);
+					var vector3 = new THREE.Vector2(newPointsList[Math.round(3*puntosMuestreo/4)].x - newPointsList[Math.round(2*puntosMuestreo/4)].x, newPointsList[Math.round(3*puntosMuestreo/4)].y - newPointsList[Math.round(2*puntosMuestreo/4)].y);
+					var vector4 = new THREE.Vector2(newPointsList[0].x - newPointsList[Math.round(2*puntosMuestreo/4)].x, newPointsList[0].y - newPointsList[Math.round(2*puntosMuestreo/4)].y);
+					var dot12 = Math.acos(vector1.dot(vector2)/(vector1.length()*vector2.length()))* (180/Math.PI);
+					var dot23 = Math.acos(vector2.dot(vector3)/(vector2.length()*vector3.length()))* (180/Math.PI);
+					var dot34 = Math.acos(vector3.dot(vector4)/(vector3.length()*vector4.length()))* (180/Math.PI);
+					var dot41 = Math.acos(vector4.dot(vector1)/(vector4.length()*vector1.length()))* (180/Math.PI);
+					if (dot12 > 90){
+						dot12 = 180 - dot12;
+					}
+					if (dot23 > 90){
+						dot23 = 180 - dot23;
+					}
+					if (dot34 > 90){
+						dot34 = 180 - dot34;
+					}
+					if (dot41 > 90){
+						dot41 = 180 - dot41;
+					}
+					var promedio = (dot12 + dot23 + dot34 + dot41)/4;
+					var umbral = 55;
+					console.log("dots " + dot12);
+					console.log("dots " + dot23);
+					console.log("dots " + dot34);
+					console.log("dots " + dot41);
+					console.log("promedio " + promedio);
+					
+					//FIN DEL REMUESTREO
+					
+					for (i = 0; i < drawLines.length; i++) { //removiendo el trazo azul
+						scene.remove( drawLines[i] );
+					}
+					
+					for (i = 1; i < newPointsList.length; i++) { //dibujando el nuevo trazo
+						var geometry = new THREE.Geometry();
+						geometry.vertices.push(newPointsList[i-1]);
+						geometry.vertices.push(newPointsList[i]);
+						var material = new THREE.LineBasicMaterial({color: 0xff0000});
+						if (promedio > umbral){
+							material = new THREE.LineBasicMaterial({color: 0x00ff00});
+						}
+						var line = new THREE.Line(geometry, material);
+						scene.add(line);
+					}
+					console.log('dibujada');
+					
+					
+				}
+				
+				
+				
+				
+				pointsList = [];
+				newPointsList = [];
+				drawLines = [];
 			}
 
 			/**
@@ -63,6 +154,7 @@
 						var line = new THREE.Line(geometry, material);
 						scene.add(line);
 						pointsList.push( point );
+						drawLines.push( line );
 						lastPoint = point;
 					} else {
 						var vector = new THREE.Vector3(( e.clientX / window.innerWidth ) * 2 - 1, - ( e.clientY / window.innerHeight ) * 2 + 1, 0.5 );
@@ -90,10 +182,10 @@
 				if (lastPoint.y < bottom.y) {
 					bottom = lastPoint;
 				}
-				console.log("TOP: " + top.x + ", " + top.y);
-				console.log("RIGHT: " + right.x + ", " + right.y);
-				console.log("BOTTOM: " + bottom.x + ", " + bottom.y);
-				console.log("LEFT: " + left.x + ", " + left.y);
+				//console.log("TOP: " + top.x + ", " + top.y);
+				//console.log("RIGHT: " + right.x + ", " + right.y);
+				//console.log("BOTTOM: " + bottom.x + ", " + bottom.y);
+				//console.log("LEFT: " + left.x + ", " + left.y);
 			}
 
 			/**
