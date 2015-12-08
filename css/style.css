@@ -1,0 +1,27 @@
+body {
+  margin: 0;
+  font-family: 'arial';
+}
+
+canvas {
+  width: 100%;
+  height: 100%
+}
+
+#clear {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  color: #fff;
+  background: #2196F3;
+  -webkit-transition: all 250ms;
+  -moz-transition: all 250ms;
+  transition: all 250ms;
+  border-radius: 5px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+  #clear:hover {
+    background: #1976D2;
+    cursor: pointer;
+  }
