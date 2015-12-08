@@ -1,6 +1,12 @@
+@font-face {
+    font-family: fontAwesome;
+    src: url(../fonts/fontawesome-webfont.woff);
+}
+
 body {
   margin: 0;
-  font-family: 'arial';
+  font-family: fontAwesome;
+  overflow: hidden;
 }
 
 canvas {
@@ -8,20 +14,33 @@ canvas {
   height: 100%
 }
 
-#clear {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 15px 25px;
-  color: #fff;
-  background: #2196F3;
-  -webkit-transition: all 250ms;
-  -moz-transition: all 250ms;
-  transition: all 250ms;
-  border-radius: 5px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+.icon {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  border-radius: 26px;
+  color: #2196F3;
+  border: 1px solid #2196F3;
+  float: right;
+  margin: 20px 10px 0 0;
 }
-  #clear:hover {
+  .icon:hover {
+    color: #fff;
     background: #1976D2;
     cursor: pointer;
+    border: 1px solid #1976D2;
   }
+
+.error {
+  display: none;
+  color: #fff;
+  padding: 15px;
+  text-align: center;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  font-size: 1.2em;
+  background: rgba(0,0,0,0.8);
+}
