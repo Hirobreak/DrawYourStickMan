@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>Surfaces and Curves</title>
+		<style>
+			body { margin: 0; }
+			canvas { 
+				width: 100%;
+				height: 100%
+			}
+		</style>
+	</head>
+	<body>
+		<script src="js/three.min.js"></script>
+		<script>
+		function get3dPointZAxis(event){
+			var vector = new THREE.Vector3(
+						( event.clientX / window.innerWidth ) * 2 - 1,
+						- ( event.clientY / window.innerHeight ) * 2 + 1,
+						0.5 );
+			projector.unprojectVector( vector, camera );
+			var dir = vector.sub( camera.position ).normalize();
+			var distance = - camera.position.z / dir.z;
+			var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );    
+			return pos;
+		}
+		</script>
+		<script>
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			var renderer = new THREE.WebGLRenderer({ alpha: true });
+			renderer.setClearColor( 0xffffff, 0);
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+			renderer.shadowMapEnabled = true;
+
+			
+			//luces
+			var ambientLight = new THREE.AmbientLight(0x888888); //creamos una luz ambiental oscura
+			scene.add(ambientLight);//la añadimos a la escena
+			
+			var dirLight5 = new THREE.DirectionalLight(0x777777);
+			dirLight5.position.set(0, 550, 0).normalize();
+			dirLight5.castShadow=true;
+			scene.add(dirLight5);
+			
+			/*var geometryPlane = new THREE.PlaneGeometry( 2, 1, 32 );
+			var materialPlane = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+			var plane = new THREE.Mesh( geometryPlane, materialPlane );
+			scene.add( plane );
+			
+			plane.rotation.x = 90;
+			plane.position.x=0;
+			plane.position.y=0;
+			plane.position.z=0;*/
+			
+			camera.position.z = 3;
+			camera.position.y = 0;
+			camera.rotation.x = 0;
+
+			// User interaction
+			//window.addEventListener( 'click', click, false );
+			renderer.domElement.addEventListener( 'mousedown', onMouseDown );
+			renderer.domElement.addEventListener( 'mouseup', onMouseUp );
+			renderer.domElement.addEventListener( 'mousemove', onMouseMove);
+			//window.addEventListener( 'mousemove', mouseMove, false );
+			
+			//VARIABLES
+			var mouseDown = false;
+			var lastPoint;
+			var point;
+			var letsDraw = false;
+			var raycaster = new THREE.Raycaster();
+			var pointsList = [];
+			
+			function render() {
+				requestAnimationFrame( render );
+				renderer.render( scene, camera );
+				//plane.rotation.x += 0.02;
+			}
+			render();
+			
+			/*function click( e ) {
+				mouseVector.x = 2 * (e.clientX / window.innerWidth) - 1;
+				mouseVector.y = 1 - 2 * ( e.clientY / window.innerHeight );
+				raycaster.setFromCamera( mouseVector, camera );
+				var intersects = raycaster.intersectObjects( objects , true);
+				console.log("INTERSECTANDO " + intersects.length);
+				
+				if (intersects.length>0){
+					console.log("EN X " + intersects[0].object.position.x + " VS LA TAPA X " + plane.position.x);
+					console.log("EN Y " + intersects[0].object.position.y + " VS LA TAPA Y " + plane.position.y);
+					console.log("EN Z " + intersects[0].object.position.z + " VS LA TAPA Z " + plane.position.z);
+					if(intersects[0].object.position==plane.position && opening == false && open==false){
+						opening = true;
+					}
+					if(intersects[0].object.position==plane.position && closing == false && open==true){
+						closing = true;
+					}
+				}
+			}*/
+			
+			function onMouseDown( e ) {
+				mouseDown = true;
+				console.log('pressed');
+			}
+			
+			function onMouseUp( e ) {
+				mouseDown = false;
+				letsDraw = false;
+				console.log('released');
+				console.log('array points lenght ' + pointsList.length);
+				pointsList = []
+			}
+			
+			function onMouseMove (e){
+				if(mouseDown){
+					if(letsDraw){
+						
+						var vector = new THREE.Vector3(( e.clientX / window.innerWidth ) * 2 - 1, - ( e.clientY / window.innerHeight ) * 2 + 1, 0.5 );
+						//raycaster.setFromCamera( mouse, camera );
+						vector.unproject( camera );
+						var dir = vector.sub( camera.position ).normalize();
+						var distance = - camera.position.z / dir.z;
+						point = camera.position.clone().add( dir.multiplyScalar( distance ) );
+						var geometry = new THREE.Geometry();
+						geometry.vertices.push(lastPoint);
+						geometry.vertices.push(point);
+						var material = new THREE.LineBasicMaterial({color: 0x0000ff});
+						var line = new THREE.Line(geometry, material);
+						scene.add(line);
+						pointsList.push( point );
+						console.log('Initial Point X: ' + point.x + ", Y: " + point.y + ', Z: ' +  point.z);
+						console.log('Final Point X: ' + lastPoint.x + ", Y: " + lastPoint.y + ', Z: ' +  lastPoint.z);
+						lastPoint = point;
+						
+					}else{
+						//console.log('was null');
+						var vector = new THREE.Vector3(( e.clientX / window.innerWidth ) * 2 - 1, - ( e.clientY / window.innerHeight ) * 2 + 1, 0.5 );
+						//console.log("hello");
+						vector.unproject( camera );
+						var dir = vector.sub( camera.position ).normalize();
+						var distance = - camera.position.z / dir.z;
+						lastPoint = camera.position.clone().add( dir.multiplyScalar( distance ) );
+						//console.log('Point X: ' + lastPoint.x + ", Y: " + lastPoint.y + ', Z: ' +  lastPoint.z);
+						letsDraw = true;
+						
+						pointsList.push( lastPoint );
+					}
+				}
+			}
+			
+
+		</script>
+	</body>
+</html>
