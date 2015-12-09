@@ -38,33 +38,33 @@ function onMouseUp( e ) {
     resample();
     newPointsList[RESAMPLE_MAX - 1] = endPoint;
 
-    if(!isHeadDrawn) {
-      // HEAD DETECTION
-      var vector1 = new THREE.Vector2(newPointsList[Math.round(RESAMPLE_MAX/4)].x - newPointsList[0].x, newPointsList[Math.round(RESAMPLE_MAX/4)].y - newPointsList[0].y);
-      var vector2 = new THREE.Vector2(newPointsList[Math.round(2*RESAMPLE_MAX/4)].x - newPointsList[Math.round(RESAMPLE_MAX/4)].x, newPointsList[Math.round(2*RESAMPLE_MAX/4)].y - newPointsList[Math.round(RESAMPLE_MAX/4)].y);
-      var vector3 = new THREE.Vector2(newPointsList[Math.round(3*RESAMPLE_MAX/4)].x - newPointsList[Math.round(2*RESAMPLE_MAX/4)].x, newPointsList[Math.round(3*RESAMPLE_MAX/4)].y - newPointsList[Math.round(2*RESAMPLE_MAX/4)].y);
-      var vector4 = new THREE.Vector2(newPointsList[0].x - newPointsList[Math.round(2*RESAMPLE_MAX/4)].x, newPointsList[0].y - newPointsList[Math.round(2*RESAMPLE_MAX/4)].y);
-      var dot12 = Math.acos(vector1.dot(vector2)/(vector1.length()*vector2.length()))* (180/Math.PI);
-      var dot23 = Math.acos(vector2.dot(vector3)/(vector2.length()*vector3.length()))* (180/Math.PI);
-      var dot34 = Math.acos(vector3.dot(vector4)/(vector3.length()*vector4.length()))* (180/Math.PI);
-      var dot41 = Math.acos(vector4.dot(vector1)/(vector4.length()*vector1.length()))* (180/Math.PI);
-      if (dot12 > 90){
-        dot12 = 180 - dot12;
-      }
-      if (dot23 > 90){
-        dot23 = 180 - dot23;
-      }
-      if (dot34 > 90){
-        dot34 = 180 - dot34;
-      }
-      if (dot41 > 90){
-        dot41 = 180 - dot41;
-      }
-      var promedio = (dot12 + dot23 + dot34 + dot41)/4;
-      var umbral = 55;
+    // HEAD DETECTION
+    var vector1 = new THREE.Vector2(newPointsList[Math.round(RESAMPLE_MAX/4)].x - newPointsList[0].x, newPointsList[Math.round(RESAMPLE_MAX/4)].y - newPointsList[0].y);
+    var vector2 = new THREE.Vector2(newPointsList[Math.round(2*RESAMPLE_MAX/4)].x - newPointsList[Math.round(RESAMPLE_MAX/4)].x, newPointsList[Math.round(2*RESAMPLE_MAX/4)].y - newPointsList[Math.round(RESAMPLE_MAX/4)].y);
+    var vector3 = new THREE.Vector2(newPointsList[Math.round(3*RESAMPLE_MAX/4)].x - newPointsList[Math.round(2*RESAMPLE_MAX/4)].x, newPointsList[Math.round(3*RESAMPLE_MAX/4)].y - newPointsList[Math.round(2*RESAMPLE_MAX/4)].y);
+    var vector4 = new THREE.Vector2(newPointsList[0].x - newPointsList[Math.round(2*RESAMPLE_MAX/4)].x, newPointsList[0].y - newPointsList[Math.round(2*RESAMPLE_MAX/4)].y);
+    var dot12 = Math.acos(vector1.dot(vector2)/(vector1.length()*vector2.length()))* (180/Math.PI);
+    var dot23 = Math.acos(vector2.dot(vector3)/(vector2.length()*vector3.length()))* (180/Math.PI);
+    var dot34 = Math.acos(vector3.dot(vector4)/(vector3.length()*vector4.length()))* (180/Math.PI);
+    var dot41 = Math.acos(vector4.dot(vector1)/(vector4.length()*vector1.length()))* (180/Math.PI);
+    if (dot12 > 90){
+      dot12 = 180 - dot12;
+    }
+    if (dot23 > 90){
+      dot23 = 180 - dot23;
+    }
+    if (dot34 > 90){
+      dot34 = 180 - dot34;
+    }
+    if (dot41 > 90){
+      dot41 = 180 - dot41;
+    }
+    var promedio = (dot12 + dot23 + dot34 + dot41)/4;
+    var umbral = 55;
 
-      // IF IS HEAD
-      if (promedio > umbral) {
+    // IF IS HEAD
+    if (promedio > umbral) {
+      if (!isHeadDrawn) {
         for (i = 1; i < newPointsList.length; i++) {
           var geometry = new THREE.Geometry();
           geometry.vertices.push(newPointsList[i-1]);
@@ -75,11 +75,17 @@ function onMouseUp( e ) {
         }
         isHeadDrawn = true;
       } else {
-        showError(ERR_COULD_NOT_DETECT);
+        showError(ERR_HEAD_ALREADY_DRAWN);
       }
-    } else {
-      showError(ERR_HEAD_ALREADY_DRAWN);
     }
+    // ELSE IF IS TORSO
+    // ELSE IF IS ARM
+    // ELSE IF IS LEG
+    else {
+      showError(ERR_COULD_NOT_DETECT);
+    }
+
+
   }
 
   pointsList = [];
@@ -209,10 +215,10 @@ function init() {
 
   RESAMPLE_MAX = 128;
 
-  ERR_HEAD_ALREADY_DRAWN = "The head is already drawn.";
-  ERR_TORSO_ALREADY_DRAWN = "";
-  ERR_LEG_ALREADY_DRAWN = "";
-  ERR_ARM_ALREADY_DRAWN = "";
+  ERR_HEAD_ALREADY_DRAWN = "The Head is already drawn.";
+  ERR_TORSO_ALREADY_DRAWN = "The Torso is already drawn.";
+  ERR_LEG_ALREADY_DRAWN = "The legs are already drawn.";
+  ERR_ARM_ALREADY_DRAWN = "The arms are already drawn.";
   ERR_COULD_NOT_DETECT = "Could not detect draw.";
 }
 
