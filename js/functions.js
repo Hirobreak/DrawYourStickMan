@@ -192,7 +192,7 @@ function init() {
   document.body.appendChild( renderer.domElement );
   renderer.shadowMapEnabled = true;
 
-  camera.position.z = 3;
+  camera.position.z = 2;
   camera.position.y = 0;
   camera.rotation.x = 0;
 
