@@ -11,6 +11,7 @@ var mouseDown = false;
 var isHeadDrawn = false;
 var isTorsoDrawn = false;
 var cabezaCentroide = new THREE.Vector2();
+var cabezaLonguitud = 0;
 var scene, camera, render;
 
 var RESAMPLE_MAX = 128;
@@ -78,7 +79,7 @@ function onMouseUp( e ) {
 		  distanciaSeparacion = pointsList[0].distanceTo(pointsList[pointsList.length-1]);
 		  if (distanciaSeparacion < 7*distanciaTotal/RESAMPLE_MAX) {
 			cabezaCentroide.x = newPointsList[0].x;
-			cabezaCentroide.y = newPointsList[0].x;
+			cabezaCentroide.y = newPointsList[0].y;
 			for (i = 1; i < newPointsList.length; i++) {
 			  var geometry = new THREE.Geometry();
 			  geometry.vertices.push(newPointsList[i-1]);
@@ -87,10 +88,11 @@ function onMouseUp( e ) {
 			  var line = new THREE.Line(geometry, material);
 			  scene.add(line);
 			  cabezaCentroide.x += newPointsList[i].x;
-			  cabezaCentroide.y += newPointsList[i].x;
+			  cabezaCentroide.y += newPointsList[i].y;
 			}
 			cabezaCentroide.x /= newPointsList.length;
 		    cabezaCentroide.y /= newPointsList.length;
+			cabezaLonguitud = distanciaTotal;
 			console.log("centroide x " + cabezaCentroide.x + " centroide y " + cabezaCentroide.y);
 			isHeadDrawn = true;
 		  }
@@ -101,6 +103,7 @@ function onMouseUp( e ) {
     // ELSE IF IS TORSO || IF IS ARM || IF IS LEG
     else if ( promedio < TORSO_THRESHOLD) {
       if (!isTorsoDrawn) {
+		
         for (i = 1; i < newPointsList.length; i++) {
           var geometry = new THREE.Geometry();
           geometry.vertices.push(newPointsList[i-1]);
