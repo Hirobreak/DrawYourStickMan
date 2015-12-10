@@ -132,8 +132,27 @@ function onMouseUp( e ) {
     // ELSE IF IS TORSO || IF IS ARM || IF IS LEG
     else if ( promedio < TORSO_THRESHOLD) {
       if (!isTorsoDrawn) {
-        draw(newPointsList,"#0000ff");
-        isTorsoDrawn = true;
+    
+        var torsoValido = false;
+		//CALCULO DE VALIDACION CERCANIA CON CABEZA
+		if(isHeadDrawn){
+		  torsoPuntoInicial = newPointsList[0];
+		  torsoPuntoFinal = newPointsList[newPointsList.length - 1];
+		  radioCabeza = cabezaLonguitud/(2*Math.PI);
+		  var nuevoCentroideCabeza = new THREE.Vector3(cabezaCentroide.x, cabezaCentroide.y, 0);
+		  if(torsoPuntoInicial.distanceTo(nuevoCentroideCabeza) < radioCabeza*1.20 ^ torsoPuntoFinal.distanceTo(nuevoCentroideCabeza) < radioCabeza*1.20){
+			torsoValido = true;
+		  }
+		}else{
+		  torsoValido = true;
+		  torsoPuntoInicial = newPointsList[0];
+		  torsoPuntoFinal = newPointsList[newPointsList.length - 1];
+		}
+		if(torsoValido){
+		  draw(newPointsList,"#0000ff");
+		  isTorsoDrawn = true;
+		}
+		
         // HEAD TORSO DISTANCE
         var point = newPointsList[RESAMPLE_MAX/2];
         headTorsoDistance = Math.sqrt(
@@ -174,32 +193,7 @@ function onMouseUp( e ) {
       }
     }
 
-    /*var torsoValido = false;
-    //CALCULO DE VALIDACION CERCANIA CON CABEZA
-    if(isHeadDrawn){
-      torsoPuntoInicial = newPointsList[0];
-      torsoPuntoFinal = newPointsList[newPointsList.length - 1];
-      radioCabeza = cabezaLonguitud/(2*Math.PI);
-      var nuevoCentroideCabeza = new THREE.Vector3(cabezaCentroide.x, cabezaCentroide.y, 0);
-      if(torsoPuntoInicial.distanceTo(nuevoCentroideCabeza) < radioCabeza*1.20 ^ torsoPuntoFinal.distanceTo(nuevoCentroideCabeza) < radioCabeza*1.20){
-        torsoValido = true;
-      }
-    }else{
-      torsoValido = true;
-      torsoPuntoInicial = newPointsList[0];
-      torsoPuntoFinal = newPointsList[newPointsList.length - 1];
-    }
-    if(torsoValido){
-      for (i = 1; i < newPointsList.length; i++) {
-        var geometry = new THREE.Geometry();
-        geometry.vertices.push(newPointsList[i-1]);
-        geometry.vertices.push(newPointsList[i]);
-        material = new THREE.LineBasicMaterial({color: 0x0000ff});
-        var line = new THREE.Line(geometry, material);
-        scene.add(line);
-      }
-      isTorsoDrawn = true;
-    }*/
+    /**/
 
     else {
       showError(ERR_COULD_NOT_DETECT);
