@@ -15,6 +15,8 @@ var isLegDrawn = false;
 var areArmsDrawn = false;
 var areLegsDrawn = false;
 var cabezaCentroide = new THREE.Vector2();
+var torsoPuntoInicial = new THREE.Vector3();
+var torsoPuntoFinal = new THREE.Vector3();
 var cabezaLonguitud = 0;
 var headTorsoDistance;
 var scene, camera, render;
@@ -76,15 +78,43 @@ function onMouseUp( e ) {
     // IF IS HEAD
     if ( promedio > HEAD_THRESHOLD) {
 	  if(!isHeadDrawn){
+		  var cabezaValida = false;
 		  var distanciaTotal = 0;
 		  var distanciaSeparacion = 0;
 		  for (i = 1; i < pointsList.length; i++) {
-			distanciaTotal += pointsList[i-1].distanceTo(pointsList[i]);
+			distanciaTotal += pointsList[i-1].distanceTo(pointsList[i]); //LONGUITUD DE LA CIRCUNFERENCIA
 		  }
+		  //SEPARACION ENTRE PUNTO FINAL E INICIAL DE CIRCUNFERENCIA
 		  distanciaSeparacion = pointsList[0].distanceTo(pointsList[pointsList.length-1]);
-		  if (distanciaSeparacion < 7*distanciaTotal/RESAMPLE_MAX) {
-			cabezaCentroide.x = newPointsList[0].x;
-			cabezaCentroide.y = newPointsList[0].y;
+
+		  //CALCULO DEL CENTROIDE DEL CIRCULO
+		  cabezaCentroide.x = newPointsList[0].x;
+		  cabezaCentroide.y = newPointsList[0].y;
+		  for (i = 1; i < newPointsList.length; i++){
+		    cabezaCentroide.x += newPointsList[i].x;
+		    cabezaCentroide.y += newPointsList[i].y;
+		  }
+		  cabezaCentroide.x /= newPointsList.length;
+		  cabezaCentroide.y /= newPointsList.length;
+		  cabezaLonguitud = distanciaTotal;
+
+		  //VALIDACION CERCANIA CON EL TORSO
+		  if(isTorsoDrawn){
+			radioCabeza = cabezaLonguitud/(2*Math.PI);
+			var nuevoCentroideCabeza = new THREE.Vector3(cabezaCentroide.x, cabezaCentroide.y, 0);
+			console.log("distancia permitida " + radioCabeza*1.20);
+			console.log("distancia punto 1 " + torsoPuntoInicial.distanceTo(nuevoCentroideCabeza));
+			console.log("distancia punto 2 " + torsoPuntoFinal.distanceTo(nuevoCentroideCabeza));
+			if(torsoPuntoInicial.distanceTo(nuevoCentroideCabeza) < radioCabeza*1.20 ^ torsoPuntoFinal.distanceTo(nuevoCentroideCabeza) < radioCabeza*1.20){
+				cabezaValida = true;
+			}
+		  }else{
+			cabezaValida = true;
+			torsoPuntoInicial = newPointsList[0];
+			torsoPuntoFinal = newPointsList[newPointsList.length - 1];
+		  }
+
+		  if (distanciaSeparacion < 7*distanciaTotal/RESAMPLE_MAX && cabezaValida) {
 			for (i = 1; i < newPointsList.length; i++) {
 			  var geometry = new THREE.Geometry();
 			  geometry.vertices.push(newPointsList[i-1]);
@@ -92,13 +122,7 @@ function onMouseUp( e ) {
 			  material = new THREE.LineBasicMaterial({color: 0xff0000});
 			  var line = new THREE.Line(geometry, material);
 			  scene.add(line);
-			  cabezaCentroide.x += newPointsList[i].x;
-			  cabezaCentroide.y += newPointsList[i].y;
 			}
-			cabezaCentroide.x /= newPointsList.length;
-		    cabezaCentroide.y /= newPointsList.length;
-			cabezaLonguitud = distanciaTotal;
-			console.log("centroide x " + cabezaCentroide.x + " centroide y " + cabezaCentroide.y);
 			isHeadDrawn = true;
 		  }
       } else {
@@ -149,6 +173,34 @@ function onMouseUp( e ) {
         }
       }
     }
+
+    /*var torsoValido = false;
+    //CALCULO DE VALIDACION CERCANIA CON CABEZA
+    if(isHeadDrawn){
+      torsoPuntoInicial = newPointsList[0];
+      torsoPuntoFinal = newPointsList[newPointsList.length - 1];
+      radioCabeza = cabezaLonguitud/(2*Math.PI);
+      var nuevoCentroideCabeza = new THREE.Vector3(cabezaCentroide.x, cabezaCentroide.y, 0);
+      if(torsoPuntoInicial.distanceTo(nuevoCentroideCabeza) < radioCabeza*1.20 ^ torsoPuntoFinal.distanceTo(nuevoCentroideCabeza) < radioCabeza*1.20){
+        torsoValido = true;
+      }
+    }else{
+      torsoValido = true;
+      torsoPuntoInicial = newPointsList[0];
+      torsoPuntoFinal = newPointsList[newPointsList.length - 1];
+    }
+    if(torsoValido){
+      for (i = 1; i < newPointsList.length; i++) {
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push(newPointsList[i-1]);
+        geometry.vertices.push(newPointsList[i]);
+        material = new THREE.LineBasicMaterial({color: 0x0000ff});
+        var line = new THREE.Line(geometry, material);
+        scene.add(line);
+      }
+      isTorsoDrawn = true;
+    }*/
+
     else {
       showError(ERR_COULD_NOT_DETECT);
     }
