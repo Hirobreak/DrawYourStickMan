@@ -30,7 +30,12 @@ var ERR_ARMS_ALREADY_DRAWN = "The arms are already drawn.";
 var ERR_COULD_NOT_DETECT = "Could not detect draw.";
 
 var HEAD_THRESHOLD = 60;
-var TORSO_THRESHOLD = 40;
+var TORSO_THRESHOLD = 50;
+
+var TORSO_TO_LIMB = 0.1;
+var torsoPoints = [];
+var areArmsNearTorso=false;
+var areLegsNearTorso=false;
 
 /**
  *
@@ -147,6 +152,9 @@ function onMouseUp( e ) {
 		    if (torsoValido) {
 		      draw(newPointsList,"#0000ff");
 		      isTorsoDrawn = true;
+          for (i =0; i<newPointsList.length; i++){
+            torsoPoints.push(newPointsList[i]);
+          }
 		    }
         // HEAD TORSO DISTANCE
         var point = newPointsList[RESAMPLE_MAX/2];
@@ -161,11 +169,23 @@ function onMouseUp( e ) {
           Math.pow(middle.y - cabezaCentroide.y, 2)
         );
         if (distance >= headTorsoDistance) {
-          if (!areLegsDrawn) {
-            if (!isLegDrawn) {
+          if (!areLegsDrawn && isTorsoDrawn) {
+            areLegsNearTorso = false;
+            for (i = 0; i<torsoPoints.length; i++){
+              console.log("probando punto Lista" +  torsoPoints.length);
+              if (newPointsList[0].distanceTo(torsoPuntoInicial)<TORSO_TO_LIMB || newPointsList[0].distanceTo(torsoPuntoFinal)<TORSO_TO_LIMB){
+                console.log("punto inicial de pierna cerca TORSO");
+                areLegsNearTorso=true;
+              }
+              else if (newPointsList[newPointsList.length-1].distanceTo(torsoPuntoInicial)<TORSO_TO_LIMB || newPointsList[newPointsList.length-1].distanceTo(torsoPuntoFinal)<TORSO_TO_LIMB){
+                console.log("punto final de pierna cerca TORSO");
+                areLegsNearTorso=true;
+              }
+            }
+            if (!isLegDrawn && areLegsNearTorso) {
               draw(newPointsList,"#49311c");
               isLegDrawn = true;
-            } else {
+            } else if (areLegsNearTorso) {
               draw(newPointsList,"#551a8b");
               areLegsDrawn = true;
             }
@@ -173,11 +193,23 @@ function onMouseUp( e ) {
             showError(ERR_LEGS_ALREADY_DRAWN);
           }
         } else {
+          areArmsNearTorso = false;
+          for (i = 0; i<torsoPoints.length; i++){
+            console.log("probando punto Lista" +  torsoPoints.length);
+            if (newPointsList[0].distanceTo(torsoPoints[i])<TORSO_TO_LIMB){
+              console.log("punto inicial de brazo cerca TORSO");
+              areArmsNearTorso=true;
+            }
+            else if (newPointsList[newPointsList.length-1].distanceTo(torsoPoints[i])<TORSO_TO_LIMB){
+              console.log("punto final de brazo cerca TORSO");
+              areArmsNearTorso=true;
+            }
+          }
           if (!areArmsDrawn) {
-            if (!isArmDrawn) {
+            if (!isArmDrawn && areArmsNearTorso) {
               draw(newPointsList,"#00ff00");
               isArmDrawn = true;
-            } else {
+            } else if (areArmsNearTorso) {
               draw(newPointsList,"#ffa500");
               areArmsDrawn = true;
             }
