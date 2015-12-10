@@ -30,7 +30,7 @@ var ERR_ARMS_ALREADY_DRAWN = "The arms are already drawn.";
 var ERR_COULD_NOT_DETECT = "Could not detect draw.";
 
 var HEAD_THRESHOLD = 60;
-var TORSO_THRESHOLD = 40;
+var TORSO_THRESHOLD = 50;
 
 /**
  *
