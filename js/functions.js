@@ -10,16 +10,21 @@ var letsDraw = false;
 var mouseDown = false;
 var isHeadDrawn = false;
 var isTorsoDrawn = false;
+var isArmDrawn = false;
+var isLegDrawn = false;
+var areArmsDrawn = false;
+var areLegsDrawn = false;
 var cabezaCentroide = new THREE.Vector2();
 var cabezaLonguitud = 0;
+var headTorsoDistance;
 var scene, camera, render;
 
 var RESAMPLE_MAX = 128;
 
 var ERR_HEAD_ALREADY_DRAWN = "The Head is already drawn.";
 var ERR_TORSO_ALREADY_DRAWN = "The Torso is already drawn.";
-var ERR_LEG_ALREADY_DRAWN = "The legs are already drawn.";
-var ERR_ARM_ALREADY_DRAWN = "The arms are already drawn.";
+var ERR_LEGS_ALREADY_DRAWN = "The legs are already drawn.";
+var ERR_ARMS_ALREADY_DRAWN = "The arms are already drawn.";
 var ERR_COULD_NOT_DETECT = "Could not detect draw.";
 
 var HEAD_THRESHOLD = 60;
@@ -103,26 +108,50 @@ function onMouseUp( e ) {
     // ELSE IF IS TORSO || IF IS ARM || IF IS LEG
     else if ( promedio < TORSO_THRESHOLD) {
       if (!isTorsoDrawn) {
-		
-        for (i = 1; i < newPointsList.length; i++) {
-          var geometry = new THREE.Geometry();
-          geometry.vertices.push(newPointsList[i-1]);
-          geometry.vertices.push(newPointsList[i]);
-          material = new THREE.LineBasicMaterial({color: 0x0000ff});
-          var line = new THREE.Line(geometry, material);
-          scene.add(line);
-        }
+        draw(newPointsList,"#0000ff");
         isTorsoDrawn = true;
+        // HEAD TORSO DISTANCE
+        var point = newPointsList[RESAMPLE_MAX/2];
+        headTorsoDistance = Math.sqrt(
+          Math.pow(point.x - cabezaCentroide.x, 2) +
+          Math.pow(point.y - cabezaCentroide.y, 2)
+        );
+      } else {
+        var middle = newPointsList[RESAMPLE_MAX/2];
+        var distance = Math.sqrt(
+          Math.pow(middle.x - cabezaCentroide.x, 2) +
+          Math.pow(middle.y - cabezaCentroide.y, 2)
+        );
+        if (distance >= headTorsoDistance) {
+          if (!areLegsDrawn) {
+            if (!isLegDrawn) {
+              draw(newPointsList,"#49311c");
+              isLegDrawn = true;
+            } else {
+              draw(newPointsList,"#551a8b");
+              areLegsDrawn = true;
+            }
+          } else {
+            showError(ERR_LEGS_ALREADY_DRAWN);
+          }
+        } else {
+          if (!areArmsDrawn) {
+            if (!isArmDrawn) {
+              draw(newPointsList,"#00ff00");
+              isArmDrawn = true;
+            } else {
+              draw(newPointsList,"#ffa500");
+              areArmsDrawn = true;
+            }
+          } else {
+            showError(ERR_ARMS_ALREADY_DRAWN)
+          }
+        }
       }
-      // ELSE IF IS ARM
-      // ELSE IF IS LEG
     }
-
     else {
       showError(ERR_COULD_NOT_DETECT);
     }
-
-
   }
 
   pointsList = [];
@@ -163,6 +192,19 @@ function onMouseMove (e) {
 			pointsList.push( lastPoint );
 		}
 	}
+}
+
+/**
+ *
+ */
+function draw(newPointsList, hex) {
+  for (i = 1; i < newPointsList.length; i++) {
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(newPointsList[i-1]);
+    geometry.vertices.push(newPointsList[i]);
+    material = new THREE.LineBasicMaterial({color: hex});
+    scene.add(new THREE.Line(geometry, material));
+  }
 }
 
 /**
