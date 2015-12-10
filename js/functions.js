@@ -10,6 +10,7 @@ var letsDraw = false;
 var mouseDown = false;
 var isHeadDrawn = false;
 var isTorsoDrawn = false;
+var cabezaCentroide = new THREE.Vector2();
 var scene, camera, render;
 
 var RESAMPLE_MAX = 128;
@@ -20,7 +21,7 @@ var ERR_LEG_ALREADY_DRAWN = "The legs are already drawn.";
 var ERR_ARM_ALREADY_DRAWN = "The arms are already drawn.";
 var ERR_COULD_NOT_DETECT = "Could not detect draw.";
 
-var HEAD_THRESHOLD = 55;
+var HEAD_THRESHOLD = 60;
 var TORSO_THRESHOLD = 40;
 
 /**
@@ -67,17 +68,32 @@ function onMouseUp( e ) {
     var promedio = (dot12 + dot23 + dot34 + dot41)/4;
     console.log("PROMEDIO: " + promedio);
     // IF IS HEAD
-    if ( promedio > HEAD_THRESHOLD ) {
-      if (!isHeadDrawn) {
-        for (i = 1; i < newPointsList.length; i++) {
-          var geometry = new THREE.Geometry();
-          geometry.vertices.push(newPointsList[i-1]);
-          geometry.vertices.push(newPointsList[i]);
-          material = new THREE.LineBasicMaterial({color: 0xff0000});
-          var line = new THREE.Line(geometry, material);
-          scene.add(line);
-        }
-        isHeadDrawn = true;
+    if ( promedio > HEAD_THRESHOLD) {
+	  if(!isHeadDrawn){
+		  var distanciaTotal = 0;
+		  var distanciaSeparacion = 0;
+		  for (i = 1; i < pointsList.length; i++) {
+			distanciaTotal += pointsList[i-1].distanceTo(pointsList[i]);
+		  }
+		  distanciaSeparacion = pointsList[0].distanceTo(pointsList[pointsList.length-1]);
+		  if (distanciaSeparacion < 7*distanciaTotal/RESAMPLE_MAX) {
+			cabezaCentroide.x = newPointsList[0].x;
+			cabezaCentroide.y = newPointsList[0].x;
+			for (i = 1; i < newPointsList.length; i++) {
+			  var geometry = new THREE.Geometry();
+			  geometry.vertices.push(newPointsList[i-1]);
+			  geometry.vertices.push(newPointsList[i]);
+			  material = new THREE.LineBasicMaterial({color: 0xff0000});
+			  var line = new THREE.Line(geometry, material);
+			  scene.add(line);
+			  cabezaCentroide.x += newPointsList[i].x;
+			  cabezaCentroide.y += newPointsList[i].x;
+			}
+			cabezaCentroide.x /= newPointsList.length;
+		    cabezaCentroide.y /= newPointsList.length;
+			console.log("centroide x " + cabezaCentroide.x + " centroide y " + cabezaCentroide.y);
+			isHeadDrawn = true;
+		  }
       } else {
         showError(ERR_HEAD_ALREADY_DRAWN);
       }
